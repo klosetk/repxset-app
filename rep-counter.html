@@ -373,7 +373,11 @@ function stepper(ix,key,val,half){return `<div class="stepper"><button data-a="d
 
 /* ---------- Audio ---------- */
 let AC=null, muted=false;
-function audioInit(){ if(!AC){try{AC=new (window.AudioContext||window.webkitAudioContext)()}catch(e){}} if(AC&&AC.state==='suspended')AC.resume(); }
+// iOS (Safari 16.4+): 'ambient' lets the app's ticks and coach play over the person's music instead of stopping it.
+// Off = 'auto', the old behaviour where iOS pauses other audio. Older iOS has no switch, so music still stops there.
+function audioSession(){ try{ if(navigator.audioSession) navigator.audioSession.type=prof().mix===false?'auto':'ambient'; }catch(e){} }
+audioSession();
+function audioInit(){ audioSession(); if(!AC){try{AC=new (window.AudioContext||window.webkitAudioContext)()}catch(e){}} if(AC&&AC.state==='suspended')AC.resume(); }
 function tone(freq,dur,vol=.25,type='sine',when=0){
   if(!AC||muted)return; const t=AC.currentTime+when, o=AC.createOscillator(), g=AC.createGain();
   o.type=type;o.frequency.value=freq;g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.0001,t+dur);
@@ -451,7 +455,7 @@ function talk(items,force){ const vOn=()=>force||voiceOn();
   next();
 }
 function talkSecs(items){const cs=clipSet();return items.reduce((s,x)=>s+((cs&&cs[x.k])?cs[x.k].d:speechSecs(x.t||'')-2),0)+2}
-function unlockAudio(){try{player.src='data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=';player.play().catch(()=>{})}catch(e){}}
+function unlockAudio(){audioSession();try{player.src='data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=';player.play().catch(()=>{})}catch(e){}}
 const PREFIX={'First up, ':'firstUp','Up next, ':'upNext','Next set, ':'nextSet'};
 // Custom exercises have no recorded tip, so the coach uses one recorded intro line instead.
 const CUSTOM_LINE="Let's start your custom exercise. Move with control, and breathe through every rep.";
@@ -543,7 +547,7 @@ function finishSet(){
   cue.setDone();
   W.qi++;
   if(W.qi>=W.queue.length){endWorkout();return;}
-  phase('rest',S.plan.rest); renderWorkout();
+  W.pick=false; phase('rest',S.plan.rest); renderWorkout();
   const nx=cur(), done=W.queue[W.qi-1]; const lead=restLine(done,nx);
   // Form tip only when a new exercise starts; between sets of the same move, just the cheer and a short cue.
   setTimeout(()=>{if(W&&W.phase==='rest'&&!W.paused){ if(nx.set===1)readForm(nx.it,'Up next, ',lead); else talk([lead,{k:'nextSet',t:LINES.cue.nextSet}]); }},900);
@@ -579,6 +583,7 @@ function renderWorkout(){
         <div class="beat"><b id="beat"></b></div>
         <div class="dots" id="dots">${Array.from({length:c.it.reps},()=>'<i></i>').join('')}</div>`
       :`${isRest&&W.fix?(W.fix.open?`<div class="fixbox"><p>Did more or fewer reps than the coach counted? Fix the number so your stats are right.</p><div class="fixrow"><div class="stepper"><button data-a="fixRep" data-v="-1" aria-label="One rep fewer">−</button><output>${W.fix.n}</output><button data-a="fixRep" data-v="1" aria-label="One rep more">+</button></div><button class="chip solid" data-a="fixOpen">Done</button></div></div>`:`<button class="fixlink" data-a="fixOpen">Logged ${W.fix.n} reps · <u>Fix count</u></button>`):''}
+        ${isRest?nextPicker(c):''}
         <div class="tip"><span class="lbl">${isRest?`Up next: set ${c.set} of ${c.it.sets} · `:''}How to do it</span><p>${esc(formFor(c.it))}</p></div>`}
     </main>
     ${!c.it.secs&&(isWork||W.phase==='ready')?`<div class="pacebar" role="group" aria-label="Rep pace"><button class="chip" data-a="wPace" data-v="1" ${S.plan.pace>=PACES[PACES.length-1]?'disabled':''}>Slower</button><span><b>${S.plan.pace}s</b> per rep</span><button class="chip" data-a="wPace" data-v="-1" ${S.plan.pace<=PACES[0]?'disabled':''}>Faster</button></div>`:''}
@@ -589,6 +594,14 @@ function renderWorkout(){
     </div></div>`;
   paint();
 }
+// During rest: choose which of the remaining exercises comes next.
+function nextLeft(){ const seen=new Set(), out=[]; for(let i=W.qi;i<W.queue.length;i++){const it=W.queue[i].it; if(!seen.has(it)){seen.add(it); out.push(it);}} return out; }
+function nextPicker(c){ const left=nextLeft(); if(left.length<2)return '';
+  if(!W.pick)return `<button class="fixlink" data-a="pickOpen">Up next: ${esc(c.it.name)} · <u>Change</u></button>`;
+  return `<div class="fixbox"><p>Pick what's next</p><div class="chips">${left.map(it=>{const i=S.plan.items.indexOf(it), n=W.queue.slice(W.qi).filter(q=>q.it===it).length;
+    return `<button class="chip ${it===c.it?'solid':''}" data-a="pickNext" data-i="${i}" aria-pressed="${it===c.it}">${esc(it.name)}${n>1?` · ${n} sets`:''}</button>`}).join('')}</div></div>`; }
+function pickNext(it){ const rest=W.queue.slice(W.qi); W.queue=W.queue.slice(0,W.qi).concat(rest.filter(q=>q.it===it),rest.filter(q=>q.it!==it)); W.pick=false;
+  renderWorkout(); const nx=cur(); readForm(nx.it,'Up next, '); }
 function paint(){
   if(S.screen!=='workout')return;
   const t=elapsed()/1000, p=S.plan;
@@ -854,6 +867,8 @@ function renderProfile(){
       <div class="list">${Object.entries(SOUNDS).map(([k,v])=>`<button class="opt" data-a="pSound" data-v="${k}" aria-pressed="${(pr.sound||'classic')===k}"><span><span class="t">${v.label}</span><br><span class="d">${v.desc}</span></span><span class="check">${(pr.sound||'classic')===k?ICON_CHECK:''}</span></button>`).join('')}</div>
       <div class="row"><label for="pVol">Volume</label><input id="pVol" type="range" min="0.2" max="1.5" step="0.1" value="${pr.vol==null?1:pr.vol}" style="flex:1;max-width:200px;accent-color:var(--accent)"></div>
       <div class="row"><span>Tick every second</span>${sw('pTicks',pr.ticks!==false,'On','Off','Tick every second')}</div>
+      <div class="row"><span>Keep my music playing</span>${sw('pMix',pr.mix!==false,'On','Off','Keep my music playing')}</div>
+      <p class="note" style="margin:0">On iPhone, your music keeps going under the coach and ticks. Your ringer switch needs to be off silent to hear the app.</p>
       <button class="ghost" data-a="sndTest">Hear timer sounds</button></div>
     <div class="card"><span class="lbl">Workout defaults</span>
       <div class="row"><span>Weight unit</span><div class="chips">${['lb','kg'].map(u=>`<button class="chip" data-a="pUnit" data-v="${u}" aria-pressed="${pr.unit===u}" aria-label="Weight unit ${u}">${u}</button>`).join('')}</div></div>
@@ -1120,6 +1135,7 @@ $app.addEventListener('click',e=>{
     case 'pUnit': profSet(x=>{x.unit=b.dataset.v}); setPlanUnit(b.dataset.v); render(); break;
     case 'pSound': profSet(x=>{x.sound=b.dataset.v}); render(); audioInit(); sndDemo(); break;
     case 'pTicks': profSet(x=>{x.ticks=x.ticks===false}); render(); break;
+    case 'pMix': profSet(x=>{x.mix=x.mix===false}); audioSession(); render(); break;
     case 'sndTest': audioInit(); sndDemo(); break;
     case 'skipSave': S.skipSave=true; render(); break;
     case 'clearAsk': S.confirmClear=true; render(); { const el=$app.querySelector('[data-a=clearNo]'); if(el){el.focus(); el.scrollIntoView({block:'center'});} } break;
@@ -1162,6 +1178,8 @@ $app.addEventListener('click',e=>{
       if(W.phase==='work'&&!cur().it.secs){ const t=elapsed()/1000; W.base=(W.base||0)+Math.floor(t/p.pace); W.baseT=(W.baseT||0)+t; W.acc=0; W.since=performance.now(); W.lastSec=0; }
       p.pace=np; renderWorkout(); break; }
     case 'fixOpen': if(W&&W.fix){W.fix.open=!W.fix.open; renderWorkout();} break;
+    case 'pickOpen': if(W){W.pick=true; renderWorkout();} break;
+    case 'pickNext': { if(!W||W.phase!=='rest')break; const it=p.items[+b.dataset.i]; if(it===cur().it){W.pick=false; renderWorkout(); break;} pickNext(it); break; }
     case 'fixRep': { const f=W&&W.fix; if(!f)break; const n=Math.min(f.max,Math.max(0,f.n+(+b.dataset.v))), d=n-f.n; if(!d)break; f.n=n; W.repsDone+=d; const L=W.log[f.i]; if(L)L.reps+=d; renderWorkout(); break; }
     case 'end':
       if(W.confirmEnd){endWorkout();}
