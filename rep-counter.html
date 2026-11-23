@@ -1,3 +1,4 @@
+<meta charset="utf-8">
 <title>Rep Counter</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -879,15 +880,16 @@ const THEMES={
     sakura:{name:'Sakura Noon',c:{bg:'#FBF7F8',surface:'#FFFFFF',line:'#EEDFE3',fg:'#22161A',muted:'#6E5A61',accent:'#C92A63',on:'#FFFFFF',rest:'#21798B'}},
     sky:{name:'Clear Sky',c:{bg:'#F3F7FB',surface:'#FFFFFF',line:'#DCE5EF',fg:'#0F1B2D',muted:'#566579',accent:'#1F6FEB',on:'#FFFFFF',rest:'#0F8F70'}}}},
   // Built on colors that stay apart for color-blind eyes (blue/orange for red-green, magenta/teal for blue-yellow). All text passes WCAG AA.
-  cvd:{label:'Color-blind friendly',note:'Red-green themes help with protanopia and deuteranopia, the most common types. Blue-yellow themes help with tritanopia. Goal tags switch to color-blind safe colors too.',list:{
-    rgLight:{name:'Red-green · Light',cvd:'rg',c:{bg:'#F6F7F9',surface:'#FFFFFF',line:'#D5DAE1',fg:'#111418',muted:'#525A66',accent:'#005A9C',on:'#FFFFFF',rest:'#A34F00'}},
-    rgDark:{name:'Red-green · Dark',cvd:'rg',dark:1,c:{bg:'#0D1117',surface:'#161B22',line:'#2B323C',fg:'#F0F3F6',muted:'#9AA4B2',accent:'#56B4E9',on:'#0D1117',rest:'#E69F00'}},
-    byLight:{name:'Blue-yellow · Light',cvd:'by',c:{bg:'#F8F6F6',surface:'#FFFFFF',line:'#E2DCDD',fg:'#161212',muted:'#5E5656',accent:'#B0174F',on:'#FFFFFF',rest:'#00695C'}},
-    byDark:{name:'Blue-yellow · Dark',cvd:'by',dark:1,c:{bg:'#120E10',surface:'#1D171A',line:'#352C30',fg:'#F5F0F2',muted:'#A69CA1',accent:'#FF6F91',on:'#120E10',rest:'#4DD0C4'}}}}
+  cvd:{label:'Color-blind friendly',note:'Named for the type of color blindness they serve, not their colors. Red-green safe (protanopia, deuteranopia, the most common types) uses blue and orange. Blue-yellow safe (tritanopia) uses pink and teal. Goal tags switch to safe colors too.',list:{
+    rgLight:{name:'Red-green safe · Light',cvd:'rg',c:{bg:'#F6F7F9',surface:'#FFFFFF',line:'#D5DAE1',fg:'#111418',muted:'#525A66',accent:'#005A9C',on:'#FFFFFF',rest:'#A34F00'}},
+    rgDark:{name:'Red-green safe · Dark',cvd:'rg',dark:1,c:{bg:'#0D1117',surface:'#161B22',line:'#2B323C',fg:'#F0F3F6',muted:'#9AA4B2',accent:'#56B4E9',on:'#0D1117',rest:'#E69F00'}},
+    byLight:{name:'Blue-yellow safe · Light',cvd:'by',c:{bg:'#F8F6F6',surface:'#FFFFFF',line:'#E2DCDD',fg:'#161212',muted:'#5E5656',accent:'#B0174F',on:'#FFFFFF',rest:'#00695C'}},
+    byDark:{name:'Blue-yellow safe · Dark',cvd:'by',dark:1,c:{bg:'#120E10',surface:'#1D171A',line:'#352C30',fg:'#F5F0F2',muted:'#A69CA1',accent:'#FF6F91',on:'#120E10',rest:'#4DD0C4'}}}}
 };
-// Goal dot colors under a color-blind theme (Okabe-Ito based), light and dark versions.
-const CVD_GOALS={rg:{l:['#005A9C','#A34F00','#3F8FC4','#6B6B6B','#CC79A7','#1A1A1A','#B8860B','#7A3E9D'],d:['#56B4E9','#E69F00','#CC79A7','#F0E442','#0072B2','#D55E00','#BBBBBB','#FFFFFF']},
-  by:{l:['#B0174F','#00695C','#5E5656','#D55E00','#1A1A1A','#E7298A','#4D4D4D','#8C2D04'],d:['#FF6F91','#4DD0C4','#F5F0F2','#FF8C42','#A69CA1','#FFB3C6','#80CBC4','#D9D9D9']}};
+// Goal dot colors under a color-blind theme, light and dark versions (Okabe-Ito / Paul Tol picks). Checked with Machado 2009 simulation:
+// every pair stays apart (CIELAB dE >= 17) for normal vision plus protan+deutan (rg) or tritan (by), and each dot is >= 3:1 on its surface.
+const CVD_GOALS={rg:{l:['#005A9C','#A34F00','#CC79A7','#000000','#B0174F','#EE6677','#332288','#AA3377'],d:['#56B4E9','#E69F00','#F4A582','#FFFFFF','#666666','#A34F00','#0072B2','#BBBBBB']},
+  by:{l:['#B0174F','#00695C','#8C510A','#000000','#999933','#7A3E9D','#7570B3','#CC79A7'],d:['#FF6F91','#4DD0C4','#FFFFFF','#666666','#FDB863','#1B7837','#B2ABD2','#AA4499']}};
 const goalPalette=()=>{const t=themeById(prof().theme); return t&&t.cvd?CVD_GOALS[t.cvd][t.dark?'d':'l']:GOAL_COLORS;};
 const themeById=id=>{for(const g of Object.values(THEMES))if(g.list[id])return g.list[id];return null};
 function applyTheme(){
