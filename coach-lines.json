@@ -1,0 +1,306 @@
+{
+ "_note": "Spoken lines recorded in each coach voice. t = words, e = delivery note sent to the voice model. Rest lines play at the start of each break, picked at random without repeating back to back.",
+ "rest": [
+  {
+   "t": "Nice. Let's take a beat for a minute... good work.",
+   "e": "Warm and pleased, a soft exhale after 'Nice', trailing off gently at the pause, sincere on 'good work'."
+  },
+  {
+   "t": "That's a set. Shake it out, and breathe.",
+   "e": "Relaxed and easygoing, like dropping your shoulders. Slow down on 'breathe'."
+  },
+  {
+   "t": "Beautiful. Let your shoulders drop... and catch your breath.",
+   "e": "Genuinely admiring on 'Beautiful', then soothing and slow, almost a hush."
+  },
+  {
+   "t": "Good stuff. Grab a sip of water if you need it.",
+   "e": "Casual and friendly, like a buddy nodding at you. Light and unhurried."
+  },
+  {
+   "t": "Mm, smooth reps. Take this minute, you earned it.",
+   "e": "Impressed and approving on 'smooth reps', a small smile in the voice, then generous and kind."
+  },
+  {
+   "t": "Well done. Breathe in slow... and out even slower.",
+   "e": "Calm and grounding, guiding a breath. Stretch the words 'slow' and 'slower'."
+  },
+  {
+   "t": "Ooh, that looked strong. Rest easy for a moment.",
+   "e": "Lightly surprised and proud on 'Ooh', then settling into a gentle, easy tone."
+  },
+  {
+   "t": "Nice and steady. Let your heart rate come back down.",
+   "e": "Steady and reassuring, like a hand on the shoulder. Even pacing."
+  },
+  {
+   "t": "Look at you go! Take a breather.",
+   "e": "Playful and delighted, a little laugh in the voice on 'Look at you go', then relaxed."
+  },
+  {
+   "t": "Clean work. Loosen up, and reset.",
+   "e": "Matter-of-fact approval, quietly confident, then loose and calm."
+  },
+  {
+   "t": "Right on. Roll your neck... relax your hands.",
+   "e": "Upbeat on 'Right on', then slow and easy like a stretch, almost lazy."
+  },
+  {
+   "t": "Solid set. Let's just pause here for a bit.",
+   "e": "Content and satisfied, unhurried, like settling onto a bench."
+  }
+ ],
+ "heavy": [
+  {
+   "t": "Whew, that was real weight. Take your full rest, you need it.",
+   "e": "Impressed and a little awed on 'Whew', then caring and protective."
+  },
+  {
+   "t": "Strong work under that load. Breathe deep, and let your body recover.",
+   "e": "Respectful and proud, voice slightly lower and fuller. Slow, deep pacing on 'breathe deep'."
+  },
+  {
+   "t": "Heavy, and controlled. That's how it's done. Rest up.",
+   "e": "Firm admiration, emphasize 'controlled', a satisfied nod in 'That's how it's done'."
+  },
+  {
+   "t": "You moved some serious weight there. Shake out that grip.",
+   "e": "Amazed and a bit playful, emphasize 'serious', then relaxed."
+  },
+  {
+   "t": "That weight didn't stand a chance. Now slow your breathing down.",
+   "e": "Confident and fired up with a grin in the voice, then shifting down into calm."
+  },
+  {
+   "t": "Big lift. Stay loose... stay calm. Get ready for the next one.",
+   "e": "Proud on 'Big lift', then quiet and focused, building gentle resolve at the end."
+  },
+  {
+   "t": "That's heavy work. Let those muscles recharge.",
+   "e": "Warm respect, steady and kind, unhurried."
+  },
+  {
+   "t": "You owned that weight. Walk it off, and breathe.",
+   "e": "Bold and proud on 'owned', then easing into a soft, calming finish."
+  }
+ ],
+ "pr": [
+  {
+   "t": "Hey... that's the heaviest you've done on this one. Let that sink in.",
+   "e": "A happy realization on 'Hey', genuinely moved, slow and savoring."
+  },
+  {
+   "t": "New best! You're getting stronger, and it shows.",
+   "e": "Excited and celebratory on 'New best', then heartfelt and proud."
+  },
+  {
+   "t": "Heavier than last time, and you made it look easy. I'm proud of you.",
+   "e": "Delighted and a little amazed, then soft and sincere on 'I'm proud of you'."
+  },
+  {
+   "t": "That's a personal record. Take a second to enjoy it.",
+   "e": "Beaming and warm, with a smile you can hear. Gentle on 'enjoy it'."
+  }
+ ],
+ "lastSet": [
+  {
+   "t": "One more set after this break. Let's finish strong.",
+   "e": "Encouraging and focused, a spark of determination on 'finish strong'."
+  },
+  {
+   "t": "Last set is coming up. Save a little fire for it.",
+   "e": "Knowing and a little sly, like sharing a secret, then motivating."
+  },
+  {
+   "t": "Final round next. You've got this.",
+   "e": "Calm confidence, completely believing in them. Warm emphasis on 'got'."
+  }
+ ],
+ "newExercise": [
+  {
+   "t": "Nice work on that one. Let's switch it up.",
+   "e": "Pleased, then lightly upbeat and curious about what's next."
+  },
+  {
+   "t": "That move's done. On to the next.",
+   "e": "Breezy and satisfied, a little momentum in the voice."
+  },
+  {
+   "t": "Great job. Time for something new.",
+   "e": "Bright and friendly, a hint of fun anticipation."
+  }
+ ],
+ "done": [
+  {
+   "t": "And... that's a wrap. Great work today.",
+   "e": "A playful pause after 'And', then joyful and proud, a big smile."
+  },
+  {
+   "t": "Workout done. You showed up, and you put in the work.",
+   "e": "Heartfelt and sincere, slow on 'You showed up', with real respect."
+  },
+  {
+   "t": "All finished! Be proud of that one.",
+   "e": "Happy and celebratory, then soft and personal on the last words."
+  }
+ ],
+ "cue": {
+  "go": {
+   "t": "Go!",
+   "e": "A crisp, energized burst, like a starting call. Short and punchy."
+  },
+  "firstUp": {
+   "t": "Alright, first up,",
+   "e": "Friendly and inviting, like starting a conversation."
+  },
+  "upNext": {
+   "t": "Up next,",
+   "e": "Light and conversational, moving things along."
+  },
+  "nextSet": {
+   "t": "Okay, next set,",
+   "e": "Relaxed and easy, reassuring."
+  },
+  "preview": {
+   "t": "Hey, let's go.",
+   "e": "Warm hello, inviting and confident."
+  },
+  "custom": {
+   "t": "Let's start your custom exercise. Move with control, and breathe through every rep.",
+   "e": "Warm and inviting, a little spark of excitement on 'custom exercise', then calm and steady guidance."
+  },
+  "switch": {
+   "t": "Switch sides.",
+   "e": "Calm and clear, a gentle prompt, unhurried."
+  }
+ },
+ "_delivery": {
+  "count": "Counting reps with a training partner: focused, rhythmic and encouraging. Say just the number, short and clear, with a little lift.",
+  "tip": "Talk like a friend standing beside them, not a narrator. Conversational and warm, natural pauses between sentences, a small smile on the imagery, and slow down a touch on the key body cue."
+ },
+ "earlySet": [
+  {
+   "t": "Stopped a few short? That's okay. Every rep you did still counts.",
+   "e": "Gentle and understanding, no judgment at all, a reassuring smile on the second sentence."
+  },
+  {
+   "t": "You cut that one early, and that's alright. Listen to your body.",
+   "e": "Calm and caring, like a friend checking in. Soft emphasis on 'listen to your body'."
+  },
+  {
+   "t": "Not every set goes to plan. Catch your breath, and we'll go again.",
+   "e": "Warm and steady, a little knowing, then encouraging on 'we'll go again'."
+  },
+  {
+   "t": "Hey, a few reps short is still a lot more than zero. Good effort.",
+   "e": "Light and kind with a bit of playful warmth, sincere on 'Good effort'."
+  }
+ ],
+ "earlyEnd": [
+  {
+   "t": "Calling it early today? That's okay. Showing up was the hardest part, and you did it.",
+   "e": "Understanding and warm, no disappointment, real pride on 'you did it'."
+  },
+  {
+   "t": "We ended a little early, and that's alright. Rest up, and come back stronger.",
+   "e": "Soft and supportive, then quietly motivating on 'come back stronger'."
+  },
+  {
+   "t": "Not the full workout, but you still moved today. I'll see you next time.",
+   "e": "Kind and easygoing, a warm smile on 'I'll see you next time'."
+  }
+ ],
+ "_remindNote": "Gym check-in, per coach. 30 min before a session the coach asks 'ask'. The person answers Yes / No / I'm going tomorrow. Yes reply is picked by consistency: new = first session, streak = made the last one, slip = missed the last one, missed = missed 2+ in a row. Tomorrow books a one-off check-in at the same time tomorrow.",
+ "checkin": {
+  "smoky": {
+   "ask": {
+    "t": "Hey, it's Shimmer. You're heading to the gym today, right?",
+    "e": "Warm and casual, like calling a friend. Bright hello, a hopeful lift on 'right?'"
+   },
+   "yes_new": {
+    "t": "Mm, that's my favorite answer. The first one's always the hardest, and you're already doing it. See you in there.",
+    "e": "Low, warm and delighted, a husky hum on 'Mm', slow and proud."
+   },
+   "yes_streak": {
+    "t": "Of course you are. Look at you, keeping that rhythm. Go on, I'll be right there with you.",
+    "e": "Smoky and affectionate, a knowing smile, unhurried."
+   },
+   "yes_slip": {
+    "t": "Good. Last time slipped away, and that's okay. Today we pick it right back up, nice and easy.",
+    "e": "Gentle and reassuring, a soft exhale, then quietly encouraging."
+   },
+   "yes_missed": {
+    "t": "Oh, I've missed you. Don't worry about the time away. Just walk through that door. That's the whole win today.",
+    "e": "Tender and moved, close and sincere, hopeful at the end."
+   },
+   "no": {
+    "t": "Oh... not today? I'll be honest, that stings a little. I was looking forward to it. But I'm not going anywhere. Rest up, and next time, we make it count.",
+    "e": "A soft, disappointed sigh on 'Oh', genuinely a little hurt on 'that stings', then warm and steady, quietly encouraging at the end."
+   },
+   "tomorrow": {
+    "t": "Tomorrow, hm? I was hoping to see you today... but okay. I'll hold you to it. Same time tomorrow, and don't keep me waiting.",
+    "e": "Lightly let down at first, a husky sigh, then a playful, knowing smile on 'don't keep me waiting'."
+   }
+  },
+  "steady": {
+   "ask": {
+    "t": "Hey, it's Onyx. You're heading to the gym today, right?",
+    "e": "Warm and casual, like calling a friend. Bright hello, a hopeful lift on 'right?'"
+   },
+   "yes_new": {
+    "t": "Good. First session. We'll start simple and build from there. Grab your water and head out.",
+    "e": "Grounded and pleased, a confident nod in the voice."
+   },
+   "yes_streak": {
+    "t": "That's what I like to hear. You've been consistent, and it shows. Let's keep the chain going.",
+    "e": "Steady pride, quietly impressed, firm and warm."
+   },
+   "yes_slip": {
+    "t": "Good. Last session got away from you, but today's what counts. Let's get back on track.",
+    "e": "Even and reassuring, no scolding, a little resolve at the end."
+   },
+   "yes_missed": {
+    "t": "Good to hear. It's been a few sessions, so we'll go light and just get you moving. Proud of you for going.",
+    "e": "Calm and sincere, warm respect, soft on 'Proud of you'."
+   },
+   "no": {
+    "t": "Not today? I'll be straight with you, I'm a little disappointed. But one missed day doesn't undo your work. Get some rest, and we go again next session.",
+    "e": "Honest disappointment, a slower, heavier start, then firm and reassuring, building resolve on 'we go again'."
+   },
+   "tomorrow": {
+    "t": "Pushing it to tomorrow. I'd rather see you today, but I respect it. Same time tomorrow, no excuses. I'll be checking in.",
+    "e": "A small disappointed exhale, measured, then firm accountability with warmth on 'I'll be checking in'."
+   }
+  },
+  "bright": {
+   "ask": {
+    "t": "Hey, it's Alloy! You're heading to the gym today, right?",
+    "e": "Warm and casual, like calling a friend. Bright hello, a hopeful lift on 'right?'"
+   },
+   "yes_new": {
+    "t": "Yes! First session, let's go! Shoes on, water bottle, and I'll see you there!",
+    "e": "Excited and bouncy, genuine joy, not over the top."
+   },
+   "yes_streak": {
+    "t": "Yes! That streak keeps growing. You're on fire. Let's keep it rolling!",
+    "e": "Delighted, a laugh in the voice, energized."
+   },
+   "yes_slip": {
+    "t": "Love it! Missed last time, but today's a fresh start. Let's bounce back!",
+    "e": "Bright and kind, building playful momentum."
+   },
+   "yes_missed": {
+    "t": "Oh, I'm so happy! It's been a minute, so no pressure. Even a quick one counts. Let's go!",
+    "e": "Warm and thrilled, gentle on 'no pressure', upbeat finish."
+   },
+   "no": {
+    "t": "Aw, not today? Okay, I'm a little bummed, not gonna lie. But hey, one day off won't break you. Rest up, and let's crush the next one!",
+    "e": "Deflated 'Aw', honestly bummed, then bouncing back with encouragement and a grin by the end."
+   },
+   "tomorrow": {
+    "t": "Tomorrow? Aw, I was ready today! Okay, okay, deal. But tomorrow there's no backing out. I'll check in at the same time!",
+    "e": "Playfully disappointed, a little whine on 'I was ready today', then laughing it off and upbeat accountability."
+   }
+  }
+ }
+}

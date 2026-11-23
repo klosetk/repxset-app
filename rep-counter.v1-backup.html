@@ -1,0 +1,397 @@
+<title>Rep Counter</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&display=swap">
+<style>
+/* Layout: one narrow phone-first column; header with back + step, content, sticky action bar at the bottom. */
+:root{
+  --bg:#F2F4F7; --surface:#FFFFFF; --fg:#11151D; --muted:#5A6374; --line:#DADFE8;
+  --accent:#2A4BDB; --accent-fg:#FFFFFF; --accent-soft:#E3E8FC;
+  --rest:#0B8F72; --rest-soft:#DDF3EC;
+  --display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0C0F15; --surface:#151922; --fg:#EDF0F5; --muted:#8E97A8; --line:#252B37;
+  --accent:#7290FF; --accent-fg:#0C0F15; --accent-soft:#1C2445;
+  --rest:#3CCFA6; --rest-soft:#0F2A24; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0C0F15; --surface:#151922; --fg:#EDF0F5; --muted:#8E97A8; --line:#252B37;
+  --accent:#7290FF; --accent-fg:#0C0F15; --accent-soft:#1C2445;
+  --rest:#3CCFA6; --rest-soft:#0F2A24; color-scheme:dark}
+
+html,body{height:100%}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.45;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+*{box-sizing:border-box}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.app{max-width:520px;margin:0 auto;min-height:100%;display:flex;flex-direction:column}
+header{display:flex;align-items:center;gap:12px;padding-block:14px 6px;min-height:56px}
+.back{background:none;border:1px solid var(--line);border-radius:999px;width:40px;height:40px;display:grid;place-items:center;flex:none}
+.step{font-family:var(--display);font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-size:14px}
+main{flex:1;display:flex;flex-direction:column;gap:18px;padding-block:8px 24px}
+h1{font-family:var(--display);font-weight:700;font-size:40px;line-height:1;margin:0;text-wrap:balance;letter-spacing:-.01em}
+h2{font-family:var(--display);font-weight:600;font-size:20px;margin:0;letter-spacing:.01em}
+.sub{color:var(--muted);margin:0}
+.list{display:flex;flex-direction:column;gap:10px}
+.opt{display:flex;align-items:center;justify-content:space-between;gap:12px;text-align:left;width:100%;
+  background:var(--surface);border:1.5px solid var(--line);border-radius:14px;padding:16px 18px}
+.opt .t{font-weight:600;font-size:18px}
+.opt .d{color:var(--muted);font-size:14px}
+.opt[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.check{width:24px;height:24px;border-radius:7px;border:1.5px solid var(--line);flex:none;display:grid;place-items:center}
+.opt[aria-pressed="true"] .check{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1.5px solid var(--line);background:transparent;border-radius:999px;padding:8px 14px;font-weight:500;font-size:15px}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
+.row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.lbl{font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600}
+.stepper{display:flex;align-items:center;gap:6px}
+.stepper button{width:40px;height:40px;border-radius:10px;border:1.5px solid var(--line);background:transparent;font-size:22px;line-height:1}
+.stepper output{font-family:var(--display);font-weight:700;font-size:28px;min-width:44px;text-align:center;font-variant-numeric:tabular-nums}
+.field{flex:1;min-width:0;font:inherit;font-size:16px;color:var(--fg);background:var(--bg);border:1.5px solid var(--line);border-radius:10px;padding:10px 12px}
+.tip{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px;text-align:left;display:flex;flex-direction:column;gap:4px}
+.tip p{margin:0;font-size:17px;line-height:1.45}
+select.field{appearance:auto}
+.note{font-size:13px;color:var(--muted)}
+.tag{display:inline-block;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;border:1px dashed var(--muted);color:var(--muted);border-radius:6px;padding:1px 6px;margin-left:6px;vertical-align:middle}
+.bar{position:sticky;bottom:0;padding-block:12px calc(14px + env(safe-area-inset-bottom,0px));background:linear-gradient(to top,var(--bg) 70%,transparent)}
+.primary{width:100%;border:0;border-radius:14px;background:var(--accent);color:var(--accent-fg);font-family:var(--display);font-weight:700;font-size:22px;letter-spacing:.04em;text-transform:uppercase;padding:16px}
+.primary:disabled{opacity:.4;cursor:not-allowed}
+.ghost{background:transparent;border:1.5px solid var(--line);border-radius:14px;padding:14px;font-weight:600}
+
+/* Home */
+.home{justify-content:center;gap:28px}
+.mark{font-family:var(--display);font-weight:700;font-size:72px;line-height:.9;letter-spacing:-.02em;margin:0}
+.mark span{color:var(--accent)}
+.plates{display:flex;gap:6px;align-items:center}
+.plates i{display:block;width:10px;border-radius:3px;background:var(--fg)}
+.last{font-size:14px;color:var(--muted)}
+
+/* Workout */
+.wo{gap:14px;text-align:center}
+.wo-top{display:flex;flex-direction:column;gap:4px;align-items:center}
+.wo-name{font-family:var(--display);font-weight:700;font-size:34px;line-height:1.05;margin:0}
+.wo-meta{color:var(--muted);font-weight:500}
+.track{height:4px;background:var(--line);border-radius:4px;overflow:hidden}
+.track>b{display:block;height:100%;background:var(--accent);width:0;transition:width .3s}
+.phase{font-family:var(--display);font-weight:700;text-transform:uppercase;letter-spacing:.14em;font-size:16px;color:var(--accent)}
+.wo.is-rest .phase{color:var(--rest)}
+.clock{font-family:var(--display);font-weight:700;font-variant-numeric:tabular-nums;font-size:min(34vw,170px);line-height:.9;letter-spacing:-.02em}
+.wo.is-rest .clock{color:var(--rest)}
+.rep{font-family:var(--display);font-weight:600;font-size:30px;font-variant-numeric:tabular-nums}
+.rep b{font-size:56px;font-weight:700}
+.beat{height:10px;background:var(--line);border-radius:10px;overflow:hidden;max-width:320px;width:100%;margin:0 auto}
+.beat>b{display:block;height:100%;background:var(--accent);width:0}
+.dots{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;max-width:340px;margin:0 auto}
+.dots i{width:14px;height:14px;border-radius:50%;border:2px solid var(--line)}
+.dots i.on{background:var(--accent);border-color:var(--accent)}
+.next{color:var(--muted);font-size:15px}
+.ctrls{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ctrls .primary{grid-column:1/-1}
+.pulse{animation:pulse .18s ease-out}
+@keyframes pulse{from{transform:scale(1.04)}to{transform:scale(1)}}
+@media (prefers-reduced-motion:reduce){.pulse{animation:none}.track>b{transition:none}}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 8px;text-align:center}
+.stat b{display:block;font-family:var(--display);font-size:34px;font-variant-numeric:tabular-nums}
+.stat span{font-size:13px;color:var(--muted)}
+</style>
+
+<div class="app" id="app"></div>
+
+<script>
+const EQUIP = {weights:'Weights', cable:'Cable machine', band:'Resistance band', kettlebell:'Kettlebell', machine:'Machine', none:'None'};
+const DEF = {w:'weights',c:'cable',b:'band',k:'kettlebell',m:'machine',n:'none'};
+// "Name:default equipment" — every exercise can still use any equipment.
+const RAW = {
+  upper:['Upper body','Chest, back, shoulders, arms',`Arnold press:w|Bench press:w|Bent-over row:w|Bicep curl:w|Cable crossover:c|Chest dip:n|Chest fly:w|Chest press:m|Chin-up:n|Close-grip bench press:w|Concentration curl:w|Decline bench press:w|Diamond push-up:n|Face pull:c|Front raise:w|Hammer curl:w|Incline bench press:w|Incline dumbbell fly:w|Lat pulldown:c|Lateral raise:w|Overhead press:w|Overhead tricep extension:w|Pec deck:m|Preacher curl:w|Pull-up:n|Pullover:w|Push-up:n|Rear delt fly:w|Reverse curl:w|Seated cable row:c|Shoulder press:w|Shrug:w|Single-arm row:w|Skull crusher:w|Straight-arm pulldown:c|T-bar row:w|Tricep dip:n|Tricep kickback:w|Tricep pushdown:c|Upright row:w`],
+  lower:['Lower body','Quads, hamstrings, glutes, calves',`Box jump:n|Bulgarian split squat:w|Calf raise:w|Clamshell:b|Curtsy lunge:w|Deadlift:w|Donkey kick:n|Fire hydrant:b|Front squat:w|Glute bridge:n|Glute kickback:c|Goblet squat:k|Good morning:w|Hack squat:m|Hip abduction:m|Hip adduction:m|Hip thrust:w|Jump squat:n|Lateral band walk:b|Leg curl:m|Leg extension:m|Leg press:m|Lunge:w|Pistol squat:n|Reverse lunge:w|Romanian deadlift:w|Seated calf raise:m|Single-leg deadlift:w|Squat:w|Step-up:w|Sumo deadlift:w|Sumo squat:w|Walking lunge:w|Wall sit:n`],
+  core:['Core','Abs and obliques',`Ab rollout:n|Bicycle crunch:n|Cable crunch:c|Crunch:n|Dead bug:n|Flutter kick:n|Hanging knee raise:n|Hanging leg raise:n|Heel tap:n|Hollow hold:n|Leg raise:n|Mountain climber:n|Oblique crunch:n|Pallof press:c|Plank:n|Reverse crunch:n|Russian twist:w|Side plank:n|Sit-up:n|Toe touch:n|V-up:n|Weighted sit-up:w|Windshield wiper:n|Woodchop:c`],
+  full:['Full body','Compound, multi-joint moves',`Bear crawl:n|Burpee:n|Clean:w|Clean and press:w|Deadlift to row:w|Devil press:w|Farmer's carry:w|High pull:w|Jumping jack:n|Kettlebell swing:k|Man maker:w|Power clean:w|Renegade row:w|Snatch:w|Squat to press:w|Thruster:w|Turkish get-up:k|Wall ball:w`]
+};
+const byName=(a,b)=>a.localeCompare(b,undefined,{sensitivity:'base'});
+const LIB = Object.fromEntries(Object.entries(RAW).map(([k,[label,blurb,list]])=>[k,{label,blurb,
+  ex:list.split('|').map(x=>{const [n,d]=x.split(':');return [n,DEF[d]]}).sort((a,b)=>byName(a[0],b[0]))}]));
+const FORM = {"Arnold press": "Start with dumbbells at chin height, palms facing you. Rotate your palms forward as you press overhead, then reverse on the way down.", "Bench press": "Lie with feet flat and shoulder blades squeezed together. Lower the bar to mid-chest with elbows at about 45 degrees, then press straight up.", "Bent-over row": "Hinge at the hips with a flat back and soft knees. Pull the weight to your lower ribs, squeeze your shoulder blades, then lower slowly.", "Bicep curl": "Keep your elbows pinned at your sides. Curl the weight up without swinging, squeeze at the top, and lower all the way down.", "Cable crossover": "Step forward with a slight lean and soft elbows. Bring the handles together in front of your chest in a hugging arc, then open slowly.", "Chest dip": "Lean your torso forward and lower until your upper arms are about parallel to the floor. Press back up without slamming into lockout.", "Chest fly": "Lie back with a slight bend in your elbows. Open your arms wide until you feel a stretch across your chest, then bring them back together.", "Chest press": "Sit tall with your back against the pad. Press the handles forward until your arms are almost straight, then return slowly.", "Chin-up": "Grip the bar palms facing you, shoulder width apart. Pull your chest toward the bar by driving your elbows down, then lower to a full hang.", "Close-grip bench press": "Hold the bar with hands about shoulder width apart. Keep your elbows tucked close as you lower to your lower chest, then press up.", "Concentration curl": "Sit and brace your elbow against your inner thigh. Curl the weight toward your shoulder, pause, and lower slowly.", "Decline bench press": "Secure your legs and lower the bar to your lower chest. Keep your shoulder blades pulled back and press up in a straight line.", "Diamond push-up": "Place your hands together under your chest in a diamond shape. Keep your body straight and lower your chest to your hands.", "Face pull": "Set the cable at face height. Pull the rope toward your forehead, spreading the ends apart and driving your elbows high and back.", "Front raise": "Stand tall with a slight bend in your elbows. Raise the weight in front of you to shoulder height, then lower slowly without swinging.", "Hammer curl": "Hold the weights with palms facing each other. Keep your elbows at your sides, curl up, then lower under control.", "Incline bench press": "Set the bench to about 30 degrees. Lower the bar to your upper chest and press up, keeping your shoulder blades squeezed together.", "Incline dumbbell fly": "On an incline bench, open your arms wide with soft elbows until you feel a chest stretch, then squeeze them back together.", "Lat pulldown": "Grip a little wider than your shoulders and lean back slightly. Pull the bar to your upper chest by driving your elbows down, then let it rise slowly.", "Lateral raise": "Stand tall with a slight bend in your elbows. Raise the weights out to the sides to shoulder height, leading with your elbows, then lower slowly.", "Overhead press": "Brace your core and squeeze your glutes. Press the weight straight overhead until your arms lock out, keeping your ribs down.", "Overhead tricep extension": "Hold the weight overhead with elbows pointing forward. Lower it behind your head by bending only at the elbows, then extend back up.", "Pec deck": "Sit tall with your back on the pad. Bring the handles together in front of your chest, squeeze, then let them open slowly.", "Preacher curl": "Rest the backs of your arms on the pad. Curl the weight up, squeeze, and lower until your arms are almost straight.", "Pull-up": "Grip the bar palms facing away, a little wider than your shoulders. Pull your chest up toward the bar, then lower to a full hang with control.", "Pullover": "Lie across a bench holding one weight over your chest. With slightly bent arms, lower it back behind your head, then pull it back over your chest.", "Push-up": "Hands under your shoulders and body straight from head to heels. Lower your chest to just above the floor, then push back up.", "Rear delt fly": "Hinge forward with a flat back. With soft elbows, raise the weights out to the sides, squeezing your upper back, then lower slowly.", "Reverse curl": "Hold the weight with palms facing down. Keep your elbows at your sides, curl up, then lower slowly.", "Seated cable row": "Sit tall with a slight knee bend. Pull the handle to your belly, squeeze your shoulder blades, then extend your arms without rounding your back.", "Shoulder press": "Start with the weights at shoulder height. Press straight up until your arms are extended, then lower back to shoulder level.", "Shrug": "Hold the weights at your sides with straight arms. Lift your shoulders straight up toward your ears, pause, then lower. Don't roll them.", "Single-arm row": "Brace one hand and knee on a bench with a flat back. Pull the weight toward your hip, squeeze, then lower until your arm is straight.", "Skull crusher": "Lie back holding the weight over your chest. Bend only at the elbows to lower it toward your forehead, then extend back up.", "Straight-arm pulldown": "Face the cable with arms nearly straight. Sweep the bar down to your thighs using your back, then let it rise slowly.", "T-bar row": "Hinge at the hips with a flat back. Pull the handle to your chest, squeezing your shoulder blades, then lower with control.", "Tricep dip": "Hands on a bench behind you, fingers forward. Lower until your elbows reach about 90 degrees, keeping them pointed back, then press up.", "Tricep kickback": "Hinge forward with your upper arm tight to your side. Straighten your elbow to push the weight back, squeeze, then return.", "Tricep pushdown": "Keep your elbows pinned at your sides. Push down until your arms are straight, then let the handle rise to about chest height.", "Upright row": "Hold the weight in front of your thighs. Pull it up along your body to chest height, leading with your elbows, then lower slowly.", "Box jump": "Stand a foot from the box. Swing your arms, jump, and land softly on the box with bent knees. Step down instead of jumping down.", "Bulgarian split squat": "Rest your back foot on a bench. Lower straight down until your front thigh is about parallel, keeping your front knee over your foot.", "Calf raise": "Stand on the balls of your feet. Rise up as high as you can, pause at the top, then lower your heels slowly.", "Clamshell": "Lie on your side with knees bent and feet together. Lift your top knee while keeping your feet touching, then lower slowly.", "Curtsy lunge": "Step one leg back and across behind the other. Lower until your front thigh is near parallel, then push back to standing.", "Deadlift": "Feet hip width, bar over mid-foot. Hinge with a flat back, grip the bar, and stand up by driving through your heels. Keep the bar close to your legs.", "Donkey kick": "On hands and knees, keep one knee bent and push that foot up toward the ceiling. Squeeze your glute at the top, then lower.", "Fire hydrant": "On hands and knees, lift one bent knee out to the side to hip height without shifting your weight, then lower.", "Front squat": "Rest the bar on the front of your shoulders with elbows high. Sit straight down with your chest up, then drive back up.", "Glute bridge": "Lie on your back with knees bent and feet flat. Drive through your heels to lift your hips until your body is straight from knees to shoulders. Squeeze, then lower.", "Glute kickback": "Hinge slightly forward. Push one leg straight back, squeezing your glute at the top, without arching your lower back.", "Goblet squat": "Hold the weight against your chest. Sit down between your heels with your chest up and elbows inside your knees, then stand.", "Good morning": "Bar on your upper back and soft knees. Hinge forward at the hips with a flat back until you feel a hamstring stretch, then stand back up.", "Hack squat": "Shoulders under the pads and feet shoulder width apart. Lower until your thighs are about parallel, then press through your whole foot.", "Hip abduction": "Sit tall and press your knees outward against the pads. Pause, then return slowly.", "Hip adduction": "Sit tall and squeeze your knees together against the pads. Pause, then let them open slowly.", "Hip thrust": "Upper back on a bench, weight across your hips. Drive through your heels until your hips are level, tuck your chin, and squeeze your glutes.", "Jump squat": "Squat to about parallel, then explode straight up. Land softly with bent knees and go right into the next rep.", "Lateral band walk": "Band above your knees, sit into a half squat. Step sideways while keeping tension on the band and your toes pointing forward.", "Leg curl": "Line your knees up with the machine's pivot. Curl your heels toward your glutes, squeeze, then lower slowly.", "Leg extension": "Sit with your knees lined up with the pivot. Straighten your legs fully, squeeze your quads, then lower with control.", "Leg press": "Feet shoulder width on the platform. Lower until your knees are near 90 degrees without your lower back lifting, then press up without locking your knees.", "Lunge": "Step forward and lower until both knees are about 90 degrees. Keep your torso upright and push back through your front heel.", "Pistol squat": "Stand on one leg with the other straight out in front. Lower slowly as far as you can control, then drive back up.", "Reverse lunge": "Step back and lower until both knees are about 90 degrees. Keep your weight in your front heel and push back to standing.", "Romanian deadlift": "Soft knees and a flat back. Push your hips back and slide the weight down your legs until you feel a hamstring stretch, then stand tall.", "Seated calf raise": "Pads resting on your lower thighs. Lift your heels as high as you can, pause, then lower for a full stretch.", "Single-leg deadlift": "Balance on one leg with a soft knee. Hinge forward as your back leg extends behind you, keeping your hips square, then stand up.", "Squat": "Feet shoulder width, toes slightly out. Sit back and down until your thighs are about parallel, chest up and knees tracking over your toes.", "Step-up": "Place your whole foot on the box. Drive through that heel to stand up, then step down slowly with control.", "Sumo deadlift": "Wide stance, toes out, hands inside your knees. Keep your chest up and push the floor away to stand.", "Sumo squat": "Wide stance with toes out. Sit straight down while pushing your knees out over your toes, then stand and squeeze your glutes.", "Walking lunge": "Step forward into a lunge until both knees are about 90 degrees, then step through into the next lunge.", "Wall sit": "Back flat against the wall, slide down until your knees are at 90 degrees. Keep your weight in your heels and hold.", "Ab rollout": "Kneel holding the wheel. Roll forward slowly with a flat back and tight core, then pull back using your abs.", "Bicycle crunch": "Hands lightly behind your head. Bring one elbow toward the opposite knee as the other leg extends, then switch sides.", "Cable crunch": "Kneel facing the cable with the rope beside your head. Crunch down by curling your ribs toward your hips, not by pulling with your arms.", "Crunch": "Lie with knees bent and hands lightly behind your head. Curl your shoulders off the floor using your abs, then lower slowly.", "Dead bug": "Lie on your back, arms up and knees at 90 degrees. Lower the opposite arm and leg while keeping your lower back pressed into the floor.", "Flutter kick": "Lie on your back with your lower back pressed down. Keep your legs straight and kick them up and down in small, quick moves.", "Hanging knee raise": "Hang from the bar without swinging. Pull your knees up toward your chest, then lower slowly.", "Hanging leg raise": "Hang from the bar with straight legs. Raise them to hip height or higher using your abs, then lower without swinging.", "Heel tap": "Lie with knees bent and shoulders slightly lifted. Reach side to side to tap each heel.", "Hollow hold": "Lie on your back and lift your shoulders and straight legs off the floor. Press your lower back down and hold.", "Leg raise": "Lie flat with hands under your hips. Raise straight legs to vertical, then lower slowly without letting your lower back arch.", "Mountain climber": "Start in a high plank. Drive one knee toward your chest, then switch quickly, keeping your hips level.", "Oblique crunch": "Drop your knees to one side. Crunch up toward your hip, squeezing the side of your waist, then lower.", "Pallof press": "Stand side-on to the cable with the handle at your chest. Press it straight out and resist the pull to twist, then bring it back.", "Plank": "Forearms under your shoulders, body straight from head to heels. Squeeze your glutes and core and don't let your hips sag.", "Reverse crunch": "Lie with knees bent over your hips. Curl your hips off the floor toward your chest, then lower slowly.", "Russian twist": "Sit leaning back with your chest up. Rotate side to side, bringing your hands or the weight beside each hip.", "Side plank": "Elbow under your shoulder, body in a straight line. Lift your hips and hold without letting them drop.", "Sit-up": "Knees bent and feet anchored. Curl all the way up to sitting, then lower slowly back down.", "Toe touch": "Lie on your back with legs straight up. Reach your hands toward your toes by lifting your shoulders, then lower.", "V-up": "Lie flat with arms overhead. Lift your legs and torso at the same time to meet in a V, then lower with control.", "Weighted sit-up": "Hold the weight at your chest with knees bent. Curl up to sitting, then lower slowly.", "Windshield wiper": "Lie with legs straight up and arms out wide. Lower your legs to one side, then sweep through the middle to the other side.", "Woodchop": "Start with the cable high on one side. Pull diagonally across your body to the opposite hip, rotating your torso and pivoting your back foot.", "Bear crawl": "On hands and toes with knees just off the floor. Move your opposite hand and foot together, keeping your back flat.", "Burpee": "Squat down, place your hands on the floor, and jump your feet back to a plank. Jump your feet back in, then jump up with arms overhead.", "Clean": "Start like a deadlift. Explode through your hips, pull the weight high, and catch it on the front of your shoulders with elbows forward.", "Clean and press": "Clean the weight to your shoulders, then brace and press it overhead. Lower it back to your shoulders, then to the floor.", "Deadlift to row": "Deadlift the weight to standing, hinge to a bent-over position, row it to your ribs, then lower.", "Devil press": "Do a burpee holding dumbbells, then swing them from the floor straight overhead in one move.", "Farmer's carry": "Hold heavy weights at your sides. Walk with your shoulders back, chest up, and short, steady steps.", "High pull": "Hold the weight in front of your thighs. Drive up through your hips and pull the weight to chest height with your elbows high.", "Jumping jack": "Jump your feet wide while raising your arms overhead, then jump back to start. Land softly.", "Kettlebell swing": "Hinge at your hips and hike the bell back between your legs. Snap your hips forward to swing it to chest height. Your arms just guide it.", "Man maker": "Do a push-up on dumbbells, row each side, jump your feet in, then clean and press the weights overhead.", "Power clean": "Pull the bar from the floor, explode through your hips, and catch it on your shoulders in a quarter squat.", "Renegade row": "In a plank on dumbbells, row one weight to your hip without twisting your hips, then switch sides.", "Snatch": "In one move, drive through your hips and pull the weight from the floor straight overhead, locking your arm out at the top.", "Squat to press": "Hold the weights at your shoulders and squat down, then drive up and press them overhead as you stand.", "Thruster": "Front squat down, then drive up hard and use that momentum to press the weight overhead in one smooth move.", "Turkish get-up": "Lie holding the weight straight up and keep your eyes on it. Roll to your elbow, then your hand, then a kneel, and stand. Reverse to return.", "Wall ball": "Hold the ball at your chest and squat down. Drive up and throw it to a target on the wall, catch it, and go right into the next squat."};
+const GENERIC_FORM='Move slowly and with control through your full range of motion. Keep your core tight, and breathe out as you push or pull.';
+const formFor=it=>it.form||FORM[it.name]||GENERIC_FORM;
+const COACH_STYLES={steady:{label:'Steady',rate:1,pitch:1},calm:{label:'Calm',rate:.88,pitch:.85},hype:{label:'Hype',rate:1.2,pitch:1.2}};
+const PACES=[2,3,4], RESTS=[30,45,60,90,120];
+const STEPS=['category','exercises','equipment','volume'];
+
+const S = {screen:'home', plan:freshPlan()};
+function freshPlan(){return {category:null, items:[], pace:3, rest:60, voice:true, tips:true, coachVoice:'', coachStyle:'steady'}}
+function load(){try{return JSON.parse(localStorage.getItem('rc-last')||'null')}catch(e){return null}}
+function save(p){try{localStorage.setItem('rc-last',JSON.stringify(p))}catch(e){}}
+
+const $app=document.getElementById('app');
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fmt=s=>{s=Math.max(0,Math.floor(s));return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')};
+const ICON_BACK='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>';
+const ICON_CHECK='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg>';
+
+function head(stepName){
+  const i=STEPS.indexOf(stepName);
+  return `<header><button class="back" data-a="back" aria-label="Back">${ICON_BACK}</button>
+    <span class="step">${i>=0?`Step ${i+1} of ${STEPS.length}`:''}</span></header>`;
+}
+
+function render(){
+  const p=S.plan, sc=S.screen;
+  if(sc==='home'){
+    const last=load();
+    $app.innerHTML=`<main class="home">
+      <div class="plates" aria-hidden="true"><i style="height:44px"></i><i style="height:60px"></i><i style="height:76px"></i><i style="height:60px"></i><i style="height:44px"></i></div>
+      <p class="mark">Rep<br><span>Counter</span></p>
+      <p class="sub">Plan your sets, then train to a steady tick. The timer and rep count stay big on screen so you never lose your place.</p>
+      <div class="list">
+        <button class="primary" data-a="plan">Plan workout</button>
+        ${last&&last.items&&last.items.length?`<button class="ghost" data-a="repeat">Repeat last workout</button>
+        <span class="last">${esc(last.items.map(x=>x.name).join(', '))}</span>`:''}
+      </div></main>`;
+    return;
+  }
+  if(sc==='category'){
+    $app.innerHTML=head('category')+`<main><h1>What are you training?</h1><div class="list">
+      ${Object.entries(LIB).map(([k,v])=>`<button class="opt" data-a="cat" data-k="${k}" aria-pressed="${p.category===k}">
+        <span><span class="t">${v.label}</span><br><span class="d">${v.blurb}</span></span></button>`).join('')}
+      </div></main>`;
+    return;
+  }
+  if(sc==='exercises'){
+    const lib=LIB[p.category];
+    const names=[...lib.ex.map(x=>x[0]),...p.items.filter(x=>x.custom).map(x=>x.name)].sort(byName);
+    $app.innerHTML=head('exercises')+`<main><h1>Pick exercises</h1><p class="sub">${lib.label}. Choose as many as you like. The numbers show the order you'll do them in.</p>
+      <form class="card" id="addForm"><label class="lbl" for="customEx">Add your own exercise</label>
+        <div class="row"><input id="customEx" class="field" maxlength="40" placeholder="e.g. Landmine press" autocomplete="off">
+        <button class="chip" type="submit" aria-pressed="true">Add</button></div></form>
+      <div class="list">${names.map(n=>{const i=p.items.findIndex(x=>x.name===n);const it=p.items[i];return `<button class="opt" data-a="ex" data-n="${esc(n)}" aria-pressed="${i>=0}">
+        <span class="t">${esc(n)}${it&&it.custom?'<span class="tag">Custom</span>':''}</span><span class="check">${i>=0?`<small style="font-weight:700">${i+1}</small>`:''}</span></button>`}).join('')}</div></main>
+      <div class="bar"><button class="primary" data-a="next" ${p.items.length?'':'disabled'}>Next${p.items.length?` · ${p.items.length} picked`:''}</button></div>`;
+    return;
+  }
+  if(sc==='equipment'){
+    $app.innerHTML=head('equipment')+`<main><h1>Choose equipment</h1><p class="sub">Tap what you're using for each move.</p>
+      <div class="list">${p.items.map((it,ix)=>`<div class="card"><div><h2>${esc(it.name)}</h2><p class="note" style="margin:4px 0 0">${esc(formFor(it))}</p></div><div class="chips">
+        ${Object.keys(EQUIP).map(e=>`<button class="chip" data-a="eq" data-i="${ix}" data-e="${e}" aria-pressed="${it.equip===e}">${EQUIP[e]}</button>`).join('')}
+      </div></div>`).join('')}</div></main>
+      <div class="bar"><button class="primary" data-a="next">Next</button></div>`;
+    return;
+  }
+  if(sc==='volume'){
+    $app.innerHTML=head('volume')+`<main><h1>Sets and reps</h1>
+      <div class="list">${p.items.map((it,ix)=>`<div class="card"><div><h2>${esc(it.name)}</h2><span class="note">${EQUIP[it.equip]}</span></div>
+        <div class="row"><span class="lbl">Sets</span>${stepper(ix,'sets',it.sets)}</div>
+        <div class="row"><span class="lbl">Reps</span>${stepper(ix,'reps',it.reps)}</div></div>`).join('')}
+      <div class="card">
+        <div><span class="lbl">Rep pace</span><span class="tag">Guess</span><p class="note" style="margin:4px 0 0">Seconds per rep. You'll hear a tick each second and a count at the end of every rep.</p></div>
+        <div class="chips">${PACES.map(v=>`<button class="chip" data-a="pace" data-v="${v}" aria-pressed="${p.pace===v}">${v}s</button>`).join('')}</div>
+        <div><span class="lbl">Rest between sets</span><span class="tag">Guess</span></div>
+        <div class="chips">${RESTS.map(v=>`<button class="chip" data-a="rest" data-v="${v}" aria-pressed="${p.rest===v}">${v<60?v+'s':fmt(v)}</button>`).join('')}</div>
+        <div class="row"><span class="lbl">Voice counts reps</span>
+          <button class="chip" data-a="voice" aria-pressed="${p.voice}">${p.voice?'On':'Off'}</button></div>
+        <div class="row"><span class="lbl">Read form tips between sets</span>
+          <button class="chip" data-a="tips" aria-pressed="${p.tips}">${p.tips?'On':'Off'}</button></div>
+      </div>
+      <div class="card"><span class="lbl">Coach</span>
+        <div class="chips">${Object.entries(COACH_STYLES).map(([k,v])=>`<button class="chip" data-a="style" data-v="${k}" aria-pressed="${p.coachStyle===k}">${v.label}</button>`).join('')}</div>
+        <label class="lbl" for="coachVoice">Voice</label>
+        <select id="coachVoice" class="field">${(()=>{const vs=voices();return `<option value="">Device default</option>`+vs.map(v=>`<option value="${esc(v.voiceURI)}" ${v.voiceURI===p.coachVoice?'selected':''}>${esc(v.name)}</option>`).join('')})()}</select>
+        <p class="note" style="margin:0">Voices come from your phone or computer, so the list is different on each device.</p>
+        <button class="ghost" data-a="preview">Hear this coach</button>
+      </div></div></main>
+      <div class="bar"><button class="primary" data-a="start">Start workout</button></div>`;
+    return;
+  }
+  if(sc==='workout'){ renderWorkout(); return; }
+  if(sc==='done'){
+    const w=W;
+    $app.innerHTML=`<main class="home" style="text-align:center"><p class="mark">Done.</p>
+      <div class="stats"><div class="stat"><b>${fmt(w.total/1000)}</b><span>Total time</span></div>
+      <div class="stat"><b>${w.setsDone}</b><span>Sets</span></div><div class="stat"><b>${w.repsDone}</b><span>Reps</span></div></div>
+      <div class="list"><button class="primary" data-a="home">Back to start</button></div></main>`;
+  }
+}
+function stepper(ix,key,val){return `<div class="stepper"><button data-a="dec" data-i="${ix}" data-k="${key}" aria-label="Fewer ${key}">−</button><output>${val}</output><button data-a="inc" data-i="${ix}" data-k="${key}" aria-label="More ${key}">+</button></div>`}
+
+/* ---------- Audio ---------- */
+let AC=null, muted=false;
+function audioInit(){ if(!AC){try{AC=new (window.AudioContext||window.webkitAudioContext)()}catch(e){}} if(AC&&AC.state==='suspended')AC.resume(); }
+function tone(freq,dur,vol=.25,type='sine',when=0){
+  if(!AC||muted)return; const t=AC.currentTime+when, o=AC.createOscillator(), g=AC.createGain();
+  o.type=type;o.frequency.value=freq;g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+  o.connect(g).connect(AC.destination);o.start(t);o.stop(t+dur+.02);
+}
+const cue={
+  tick:()=>tone(1100,.035,.18,'square'),
+  rep:()=>tone(1500,.12,.3,'triangle'),
+  count:()=>tone(880,.15,.3,'sine'),
+  go:()=>tone(1320,.35,.35,'sine'),
+  setDone:()=>{tone(988,.14,.3,'triangle');tone(1318,.14,.3,'triangle',.15);tone(1760,.3,.3,'triangle',.3)}
+};
+function voices(){try{const v=speechSynthesis.getVoices();const en=v.filter(x=>/^en/i.test(x.lang));return en.length?en:v}catch(e){return []}}
+function speak(text,{force=false,fast=false}={}){
+  if(muted||!('speechSynthesis' in window))return;
+  try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(String(text));const st=COACH_STYLES[S.plan.coachStyle]||COACH_STYLES.steady;
+    u.rate=st.rate*(fast?1.2:1);u.pitch=st.pitch;const v=voices().find(x=>x.voiceURI===S.plan.coachVoice);if(v){u.voice=v;u.lang=v.lang}
+    speechSynthesis.speak(u)}catch(e){}
+}
+function say(text){ if(S.plan.voice) speak(text,{fast:true}); }
+function readForm(it,prefix){ if(S.plan.tips) speak(prefix+it.name+'. '+formFor(it)); }
+const speechSecs=t=>Math.ceil(t.split(/\s+/).length/((COACH_STYLES[S.plan.coachStyle]||{rate:1}).rate*2.5))+2;
+let wake=null;
+async function lockScreen(){try{wake=await navigator.wakeLock.request('screen')}catch(e){}}
+
+/* ---------- Workout engine ---------- */
+let W=null, timer=null;
+function startWorkout(){
+  const p=S.plan, queue=[];
+  p.items.forEach(it=>{for(let s=1;s<=it.sets;s++)queue.push({it,set:s})});
+  W={queue,qi:0,phase:null,acc:0,since:0,paused:false,lastSec:-1,total:0,totalSince:performance.now(),setsDone:0,repsDone:0,repNow:0,confirmEnd:false};
+  save(p); audioInit(); lockScreen();
+  S.screen='workout';
+  if(p.tips&&!muted){const it=queue[0].it; phase('brief',speechSecs(it.name+'. '+formFor(it))); render(); readForm(it,'First up, ');} else {phase('ready',3); render();}
+  clearInterval(timer); timer=setInterval(loop,40);
+}
+function phase(name,dur){ W.phase=name; W.dur=dur; W.acc=0; W.since=performance.now(); W.lastSec=-1; W.repNow=0; }
+function elapsed(){return W.acc+(W.paused?0:performance.now()-W.since)}
+function totalMs(){return W.total+(W.paused?0:performance.now()-W.totalSince)}
+function cur(){return W.queue[W.qi]}
+
+function loop(){
+  if(!W||W.paused||S.screen!=='workout')return;
+  const t=elapsed()/1000, s=Math.floor(t), p=S.plan;
+  if(W.phase==='work'){
+    const reps=cur().it.reps;
+    if(s!==W.lastSec){
+      W.lastSec=s;
+      if(s===0){cue.go();}
+      else if(s%p.pace===0){
+        const k=s/p.pace; W.repNow=k; say(k);
+        if(k>=reps){finishSet();return;}
+        cue.rep(); bump('.rep');
+      } else cue.tick();
+    }
+  } else { // ready or rest: countdown
+    const left=W.dur-t;
+    if(s!==W.lastSec){
+      W.lastSec=s; const l=Math.ceil(left);
+      if(W.phase!=='brief'&&l<=3&&l>0){cue.count(); bump('.clock');}
+    }
+    if(left<=0){ if(W.phase==='brief'){phase('ready',3);renderWorkout();return;} phase('work',0); say('Go'); renderWorkout(); return;}
+  }
+  paint();
+}
+function finishSet(){
+  W.setsDone++; W.repsDone+=W.repNow; cue.setDone();
+  W.qi++;
+  if(W.qi>=W.queue.length){endWorkout();return;}
+  phase('rest',S.plan.rest); renderWorkout();
+  const nx=cur(); setTimeout(()=>{if(W&&W.phase==='rest'&&!W.paused)readForm(nx.it,nx.set===1?'Up next, ':'Next set, ');},900);
+}
+function endWorkout(){
+  W.total=totalMs(); W.paused=true; clearInterval(timer);
+  try{wake&&wake.release()}catch(e){} S.screen='done'; render();
+}
+function bump(sel){const el=$app.querySelector(sel);if(!el)return;el.classList.remove('pulse');void el.offsetWidth;el.classList.add('pulse')}
+
+function renderWorkout(){
+  const c=cur(), isWork=W.phase==='work', isRest=W.phase==='rest';
+  const nextUp=isRest?c:null;
+  $app.innerHTML=`<header><span class="step">Total <span id="tot">0:00</span></span><span style="flex:1"></span>
+      <button class="chip" data-a="mute" aria-pressed="${!muted}">${muted?'Sound off':'Sound on'}</button></header>
+    <main class="wo ${isRest?'is-rest':''}">
+      <div class="track"><b style="width:${W.qi/W.queue.length*100}%"></b></div>
+      <div class="wo-top">
+        <span class="phase">${isWork?'Work':isRest?'Rest':W.phase==='brief'?'Form check':'Get ready'}</span>
+        <p class="wo-name">${esc(c.it.name)}</p>
+        <span class="wo-meta">${EQUIP[c.it.equip]} · Set ${c.set} of ${c.it.sets} · ${c.it.reps} reps</span>
+      </div>
+      <div class="clock" id="clock">0:00</div>
+      ${isWork?`<div class="rep">Rep <b id="repn">1</b> / ${c.it.reps}</div>
+        <div class="beat"><b id="beat"></b></div>
+        <div class="dots" id="dots">${Array.from({length:c.it.reps},()=>'<i></i>').join('')}</div>`
+      :`<p class="next">${isRest?'Up next: ':''}${esc(c.it.name)}, set ${c.set}</p>
+        <div class="tip"><span class="lbl">How to do it</span><p>${esc(formFor(c.it))}</p></div>`}
+    </main>
+    <div class="bar"><div class="ctrls">
+      <button class="primary" data-a="pause">${W.paused?'Resume':'Pause'}</button>
+      ${isWork?`<button class="ghost" data-a="finish">Finish set</button>`:`<button class="ghost" data-a="skip">${isRest?'Skip rest':W.phase==='brief'?'Skip':'Start now'}</button>`}
+      <button class="ghost" data-a="end">${W.confirmEnd?'Tap again to end':'End workout'}</button>
+    </div></div>`;
+  paint();
+}
+function paint(){
+  if(S.screen!=='workout')return;
+  const t=elapsed()/1000, p=S.plan;
+  const clock=document.getElementById('clock'); if(!clock)return;
+  document.getElementById('tot').textContent=fmt(totalMs()/1000);
+  if(W.phase==='work'){
+    clock.textContent=fmt(t);
+    const reps=cur().it.reps, done=Math.min(reps,Math.floor(t/p.pace));
+    document.getElementById('repn').textContent=Math.min(reps,done+1);
+    document.getElementById('beat').style.width=((t%p.pace)/p.pace*100)+'%';
+    const dots=document.getElementById('dots').children;
+    for(let i=0;i<dots.length;i++)dots[i].classList.toggle('on',i<done);
+  } else {
+    clock.textContent=W.phase==='brief'?'':W.phase==='ready'?String(Math.max(1,Math.ceil(W.dur-t))):fmt(Math.ceil(W.dur-t));
+  }
+}
+
+/* ---------- Events ---------- */
+$app.addEventListener('click',e=>{
+  const b=e.target.closest('[data-a]'); if(!b)return;
+  const a=b.dataset.a, p=S.plan;
+  const go=sc=>{S.screen=sc;render();window.scrollTo(0,0)};
+  switch(a){
+    case 'plan': S.plan=freshPlan(); go('category'); break;
+    case 'repeat': { const l=load(); if(l){S.plan=Object.assign(freshPlan(),l); S.plan.items.forEach(x=>{if(!EQUIP[x.equip])x.equip='none'}); go('volume');} break; }
+    case 'home': go('home'); break;
+    case 'back': { const i=STEPS.indexOf(S.screen); go(i>0?STEPS[i-1]:'home'); break; }
+    case 'cat': if(p.category!==b.dataset.k){p.category=b.dataset.k;p.items=[];} go('exercises'); break;
+    case 'ex': { const n=b.dataset.n, i=p.items.findIndex(x=>x.name===n);
+      if(i>=0) p.items.splice(i,1);
+      else { const def=LIB[p.category].ex.find(x=>x[0]===n); p.items.push({name:n,equip:def?def[1]:'weights',sets:3,reps:10}); }
+      render(); break; }
+    case 'next': go(STEPS[STEPS.indexOf(S.screen)+1]); break;
+    case 'eq': p.items[+b.dataset.i].equip=b.dataset.e; render(); break;
+    case 'inc': case 'dec': { const it=p.items[+b.dataset.i], k=b.dataset.k, max=k==='sets'?10:50;
+      it[k]=Math.min(max,Math.max(1,it[k]+(a==='inc'?1:-1))); render(); break; }
+    case 'pace': p.pace=+b.dataset.v; render(); break;
+    case 'rest': p.rest=+b.dataset.v; render(); break;
+    case 'voice': p.voice=!p.voice; render(); break;
+    case 'tips': p.tips=!p.tips; render(); break;
+    case 'style': p.coachStyle=b.dataset.v; render(); break;
+    case 'preview': { const it=p.items[0]||{name:'Squat'}; speak("Let's go. "+it.name+'. '+formFor(it)); break; }
+    case 'start': startWorkout(); break;
+    case 'pause':
+      audioInit();
+      if(W.paused){W.paused=false;W.since=performance.now();W.totalSince=performance.now();}
+      else{W.acc=elapsed();W.total=totalMs();W.paused=true;try{speechSynthesis.cancel()}catch(e){}}
+      renderWorkout(); break;
+    case 'finish': W.repNow=Math.min(cur().it.reps,Math.floor(elapsed()/1000/p.pace)); finishSet(); break;
+    case 'skip': try{speechSynthesis.cancel()}catch(e){} if(W.phase==='brief'){phase('ready',3);} else {phase('work',0); say('Go');} renderWorkout(); break;
+    case 'mute': muted=!muted; if(muted){try{speechSynthesis.cancel()}catch(e){}} renderWorkout(); break;
+    case 'end':
+      if(W.confirmEnd){endWorkout();}
+      else{W.confirmEnd=true;renderWorkout();setTimeout(()=>{if(W&&S.screen==='workout'){W.confirmEnd=false;renderWorkout();}},3000);}
+      break;
+  }
+});
+$app.addEventListener('change',e=>{ if(e.target.id==='coachVoice'){S.plan.coachVoice=e.target.value;} });
+try{speechSynthesis.addEventListener('voiceschanged',()=>{if(S.screen==='volume')render();});}catch(e){}
+$app.addEventListener('submit',e=>{
+  e.preventDefault(); const inp=document.getElementById('customEx'); const n=inp.value.trim().replace(/\s+/g,' ');
+  if(!n)return; const p=S.plan;
+  if(!p.items.some(x=>byName(x.name,n)===0)){
+    const known=LIB[p.category].ex.find(x=>byName(x[0],n)===0);
+    p.items.push(known?{name:known[0],equip:known[1],sets:3,reps:10}:{name:n,equip:'weights',sets:3,reps:10,custom:true});
+  }
+  render(); document.getElementById('customEx').focus();
+});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&S.screen==='workout'){audioInit();lockScreen();}});
+render();
+</script>
