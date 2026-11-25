@@ -94,6 +94,7 @@ select.field{appearance:auto}
 .app.wo-mode{height:100vh;height:100dvh;min-height:0}.app.wo-mode main.wo{overflow-y:auto;min-height:0;padding-bottom:12px}.app.wo-mode .bar{position:static;background:var(--bg)}
 .wo.is-rest{gap:10px}
 .wo.is-rest .clock{font-size:min(24vw,112px)}
+.sidetag{display:inline-block;margin-top:6px;padding:3px 10px;border-radius:999px;background:var(--accent);color:var(--accent-fg);font-size:13px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
 .rep.side{font-size:26px;color:var(--accent);text-transform:uppercase;letter-spacing:.06em}
 .beat{height:10px;background:var(--line);border-radius:10px;overflow:hidden;max-width:320px;width:100%;margin:0 auto}
 .beat>b{display:block;height:100%;background:var(--accent);width:0}
@@ -218,7 +219,12 @@ const RAW = {
 const TIMED={"Air bike": [3, 30, 0], "Battle ropes": [3, 30, 0], "Brisk walk": [1, 900, 0], "Butt kicks": [3, 30, 0], "Elliptical": [1, 600, 0], "High knees": [3, 30, 0], "Incline treadmill walk": [1, 900, 0], "Jump rope": [3, 60, 0], "Lateral shuffle": [3, 30, 0], "Outdoor run": [1, 1200, 0], "Rowing machine": [1, 600, 0], "Shadow boxing": [3, 60, 0], "Skater hops": [3, 30, 0], "Sled push": [3, 30, 0], "Stair climber": [1, 600, 0], "Stationary bike": [1, 900, 0], "Treadmill run": [1, 1200, 0], "Butterfly stretch": [2, 30, 0], "Calf stretch": [2, 60, 1], "Cat-cow": [2, 45, 0], "Chest doorway stretch": [2, 30, 0], "Child's pose": [2, 45, 0], "Cobra stretch": [2, 30, 0], "Downward dog": [2, 30, 0], "Figure-four stretch": [2, 60, 1], "Frog stretch": [2, 45, 0], "Hamstring stretch": [2, 30, 0], "Hip flexor stretch": [2, 60, 1], "Lying spinal twist": [2, 60, 1], "Neck stretch": [2, 60, 1], "Pigeon pose": [2, 60, 1], "Quad stretch": [2, 60, 1], "Shoulder cross-body stretch": [2, 60, 1], "Standing side bend": [2, 60, 1], "Thread the needle": [2, 60, 1], "Tricep stretch": [2, 60, 1], "World's greatest stretch": [2, 60, 1]};
 const TIMED_CATS=['cardio','stretch'];
 const STRETCH_SET=new Set(RAW.stretch[2].split('|').map(x=>x.split(':')[0]));
-function timedInit(it,cat){ const t=TIMED[it.name]; if(t){it.sets=t[0];it.secs=t[1];if(t[2])it.sides=true;} else if(TIMED_CATS.includes(cat)){it.sets=cat==='cardio'?1:2;it.secs=cat==='cardio'?600:30;} if(it.secs){it.equip=it.equip||'none';} return it; }
+// Single-limb moves: each set runs one side, then the other, with the same reps.
+const UNI=new Set(['Bulgarian split squat','Concentration curl','Curtsy lunge','Donkey kick','Fire hydrant','Clamshell','Glute kickback','Lunge','Pallof press','Pistol squat','Reverse lunge','Single-arm row','Single-leg deadlift','Step-up','Turkish get-up','Woodchop']);
+const isUni=n=>UNI.has(n)||/\b(single|one)[- ](arm|leg|hand)\b|\bunilateral\b/i.test(n);
+const CARDIO_SET=new Set(RAW.cardio[2].split('|').map(x=>x.split(':')[0]));
+const SWITCH_SECS=5;
+function timedInit(it,cat){ const t=TIMED[it.name]; if(!t&&!TIMED_CATS.includes(cat)&&isUni(it.name))it.sides=true; if(t){it.sets=t[0];it.secs=t[1];if(t[2])it.sides=true;} else if(TIMED_CATS.includes(cat)){it.sets=cat==='cardio'?1:2;it.secs=cat==='cardio'?600:30;} if(it.secs){it.equip=it.equip||'none';} return it; }
 const secFmt=v=>v<60?v+' sec':v%60?fmt(v):(v/60)+' min';
 const byName=(a,b)=>a.localeCompare(b,undefined,{sensitivity:'base'});
 const LIB = Object.fromEntries(Object.entries(RAW).map(([k,[label,blurb,list]])=>[k,{label,blurb,
@@ -338,16 +344,19 @@ function render(){
     return;
   }
   if(sc==='volume'){
+    p.items.forEach(it=>{if(it.sides===undefined&&!it.secs&&isUni(it.name))it.sides=true});
     const allT=p.items.every(x=>x.secs), anyT=p.items.some(x=>x.secs), anyW=p.items.some(x=>!x.secs&&WEIGHTED(x.equip));
     $app.innerHTML=head('volume')+`<main><h1>${allT?'Sets and time':anyT?'Sets, reps and time':'Sets and reps'}</h1>
       <div class="list">${p.items.map((it,ix)=>`<div class="card"><div><h2>${esc(it.name)}</h2><span class="note">${EQUIP[it.equip]}</span></div>
         <div class="row"><span class="lbl">Sets</span>${stepper(ix,'sets',it.sets)}</div>
-        ${it.secs?`<div class="row"><span class="lbl">Time${it.sides?' each side':''}</span>${stepper(ix,'secs',it.secs,it.sides)}</div>`:`<div class="row"><span class="lbl">Reps</span>${stepper(ix,'reps',it.reps)}</div>`}
+        ${it.secs?`<div class="row"><span class="lbl">Time${it.sides?' each side':''}</span>${stepper(ix,'secs',it.secs,it.sides)}</div>`:`<div class="row"><span class="lbl">Reps${it.sides?' each side':''}</span>${stepper(ix,'reps',it.reps)}</div>`}
+        ${it.secs&&CARDIO_SET.has(it.name)?'':`<div class="row"><span class="lbl">Each side</span><button class="chip" data-a="sides" data-i="${ix}" aria-pressed="${!!it.sides}" aria-label="Each side, left and right">${it.sides?'On':'Off'}</button></div>
+        ${it.sides&&!it.secs?`<p class="note" style="margin:0">Left, then right, every set. ${it.sets} × ${it.reps} on each side.</p>`:''}`}
         ${!it.secs&&WEIGHTED(it.equip)?`<div class="row"><label class="lbl" for="wt${ix}">Weight (${p.unit})</label><input id="wt${ix}" class="field wt" data-i="${ix}" type="number" inputmode="decimal" min="0" step="any" placeholder="Optional" value="${it.weight||''}"></div>`:''}</div>`).join('')}
       ${anyW?`<div class="card"><div class="row"><span class="lbl">Weight unit</span><div class="chips">${['lb','kg'].map(u=>`<button class="chip" data-a="unit" data-v="${u}" aria-pressed="${p.unit===u}">${u}</button>`).join('')}</div></div>
         <p class="note" style="margin:0">Add your weight and the coach notices heavy lifts and new personal bests.</p></div>`:''}
       <div class="card">
-        ${allT?`<p class="note" style="margin:0">Timed moves count down instead of counting reps, with a 3-second countdown at the end${p.items.some(x=>x.sides)?' and a "switch sides" call halfway':''}.</p>`:`<div><span class="lbl">Rep pace</span><p class="note" style="margin:4px 0 0">Seconds per rep. You'll hear a tick each second and a count at the end of every rep.</p></div>
+        ${allT?`<p class="note" style="margin:0">Timed moves count down instead of counting reps, with a 3-second countdown at the end${p.items.some(x=>x.sides)?' and a "switch sides" call halfway':''}.</p>`:`<div><span class="lbl">Rep pace</span><p class="note" style="margin:4px 0 0">Seconds per rep. You'll hear a tick each second and a count at the end of every rep.${p.items.some(x=>x.sides&&!x.secs)?` Each-side moves get a ${SWITCH_SECS}-second switch between left and right.`:''}</p></div>
         <div class="chips">${PACES.map(v=>`<button class="chip" data-a="pace" data-v="${v}" aria-pressed="${p.pace===v}">${v}s</button>`).join('')}</div>`}
         <div><span class="lbl">Rest between sets</span></div>
         <div class="chips">${RESTS.map(v=>`<button class="chip" data-a="rest" data-v="${v}" aria-pressed="${p.rest===v}">${v<60?v+'s':fmt(v)}</button>`).join('')}</div>
@@ -364,7 +373,7 @@ function render(){
     $app.innerHTML=`<main class="home" style="text-align:center"><p class="mark">Done.</p>
       <div class="stats"><div class="stat"><b>${fmt(w.total/1000)}</b><span>Total time</span></div>
       <div class="stat"><b>${w.setsDone}</b><span>Sets</span></div>${w.repsDone||!w.secsDone?`<div class="stat"><b>${w.repsDone}</b><span>Reps</span></div>`:''}${w.secsDone?`<div class="stat"><b>${fmt(w.secsDone)}</b><span>Timed</span></div>`:''}</div>
-      ${w.early?`<p class="sub" style="margin:0">Ended early: ${w.setsDone} of ${w.queue.length} sets done. Every set counts.</p>`:''}
+      ${w.early?`<p class="sub" style="margin:0">Ended early: ${w.setsDone} of ${w.totalSets||w.queue.length} sets done. Every set counts.</p>`:''}
       ${w.setsDone&&!S.skipSave&&!S.plan.savedId?saveCard(true):''}
       <div class="list"><button class="primary" data-a="home">Back to start</button>${w.setsDone?'<button class="ghost" data-a="tab" data-k="analytics">See analytics</button>':''}</div></main>`;
   }
@@ -492,8 +501,8 @@ function releaseScreen(){ try{wake&&wake.release()}catch(e){} wake=null; try{NOS
 let W=null, timer=null;
 function startWorkout(){
   const p=S.plan, queue=[];
-  p.items.forEach(it=>{for(let s=1;s<=it.sets;s++)queue.push({it,set:s})});
-  W={queue,qi:0,phase:null,acc:0,since:0,paused:false,lastSec:-1,total:0,totalSince:performance.now(),setsDone:0,repsDone:0,repNow:0,confirmEnd:false};
+  p.items.forEach(it=>{for(let s=1;s<=it.sets;s++){ if(it.sides&&!it.secs){queue.push({it,set:s,side:1},{it,set:s,side:2});} else queue.push({it,set:s}); }});
+  W={queue,qi:0,phase:null,acc:0,since:0,paused:false,lastSec:-1,total:0,totalSince:performance.now(),setsDone:0,repsDone:0,repNow:0,confirmEnd:false,totalSets:p.items.reduce((a,it)=>a+it.sets,0)};
   W.prSaid={}; W.log=p.items.map(()=>({sets:0,reps:0,secs:0})); const best=loadBest(); p.items.forEach(it=>{it.tier=tierFor(it,p.unit,best)});
 
   save(p); audioInit(); lockScreen(); unlockAudio(); loadCoach(p.coach);
@@ -540,10 +549,15 @@ function loop(){
   paint();
 }
 function finishSet(){
-  const ci=cur().it, tm=!!ci.secs; if(tm&&W.repNow>=ci.secs-1)W.repNow=ci.secs;
-  W.lastShort=W.repNow<(tm?ci.secs:ci.reps); if(W.lastShort)W.shortSets=(W.shortSets||0)+1;
-  if(W.repNow>0){ W.setsDone++; const L=W.log[S.plan.items.indexOf(ci)]; if(tm){W.secsDone=(W.secsDone||0)+W.repNow; if(L){L.sets++; L.secs=(L.secs||0)+W.repNow;}} else {W.repsDone+=W.repNow; if(L){L.sets++; L.reps+=W.repNow;} W.fix={i:S.plan.items.indexOf(ci),n:W.repNow,max:Math.max(ci.reps*2,ci.reps+10)};} }
-  if(tm||W.repNow<=0)W.fix=null;
+  const ci=cur().it, tm=!!ci.secs, side=cur().side;
+  if(side===1){ // first side done: log its reps, quick switch, then the other side
+    const n=Math.max(0,W.repNow); W.pairReps=n; W.pairShort=n<ci.reps; W.repsDone+=n; const L=W.log[S.plan.items.indexOf(ci)]; if(L)L.reps+=n;
+    cue.setDone(); W.qi++; phase('switch',SWITCH_SECS); renderWorkout(); talk([{k:'switch',t:LINES.cue.switch}]); return; } if(tm&&W.repNow>=ci.secs-1)W.repNow=ci.secs;
+  const pair=side===2, prev=pair?(W.pairReps||0):0;
+  W.lastShort=W.repNow<(tm?ci.secs:ci.reps)||(pair&&W.pairShort); if(W.lastShort)W.shortSets=(W.shortSets||0)+1;
+  if(W.repNow>0||prev>0){ W.setsDone++; const L=W.log[S.plan.items.indexOf(ci)]; if(tm){W.secsDone=(W.secsDone||0)+W.repNow; if(L){L.sets++; L.secs=(L.secs||0)+W.repNow;}} else {W.repsDone+=W.repNow; if(L){L.sets++; L.reps+=W.repNow;} const m=pair?2:1; W.fix={i:S.plan.items.indexOf(ci),n:prev+W.repNow,both:pair,max:m*Math.max(ci.reps*2,ci.reps+10)};} }
+  W.pairReps=0; W.pairShort=false;
+  if(tm||(W.repNow<=0&&prev<=0))W.fix=null;
   cue.setDone();
   W.qi++;
   if(W.qi>=W.queue.length){endWorkout();return;}
@@ -572,17 +586,19 @@ function renderWorkout(){
     <main class="wo ${isRest?'is-rest':''} ${W.paused?'is-paused':''} ${W.phase==='brief'?'is-brief':''}">
       <div class="track"><b style="width:${W.qi/W.queue.length*100}%"></b></div>
       <div class="wo-top">
-        <span class="phase">${W.paused?'Paused':isWork?(c.it.secs?(STRETCH_SET.has(c.it.name)?'Stretch':'Go'):'Work'):isRest?'Rest':W.phase==='brief'?'Form check':'Get ready'}</span>
+        <span class="phase">${W.paused?'Paused':isWork?(c.it.secs?(STRETCH_SET.has(c.it.name)?'Stretch':'Go'):'Work'):isRest?'Rest':W.phase==='switch'?'Switch sides':W.phase==='brief'?'Form check':'Get ready'}</span>
         <p class="wo-name">${esc(c.it.name)}</p>
-        <span class="wo-meta">${c.it.secs?(c.it.sides?'Both sides':'Timed'):EQUIP[c.it.equip]}${!c.it.secs&&WEIGHTED(c.it.equip)&&c.it.weight>0?` ${c.it.weight} ${S.plan.unit}`:''} · Set ${c.set} of ${c.it.sets} · ${c.it.secs?(c.it.sides?secFmt(Math.floor(c.it.secs/2))+' each side':secFmt(c.it.secs)):c.it.reps+' reps'}</span>
+        <span class="wo-meta">${c.it.secs?(c.it.sides?'Both sides':'Timed'):EQUIP[c.it.equip]}${!c.it.secs&&WEIGHTED(c.it.equip)&&c.it.weight>0?` ${c.it.weight} ${S.plan.unit}`:''} · Set ${c.set} of ${c.it.sets} · ${c.it.secs?(c.it.sides?secFmt(Math.floor(c.it.secs/2))+' each side':secFmt(c.it.secs)):c.it.reps+(c.side?' reps each side':' reps')}</span>
+        ${c.side&&!isRest?`<span class="sidetag">${c.side===1?'Left side':'Right side'}</span>`:''}
       </div>
       <div class="clock" id="clock">0:00</div>
       <div class="capslot" id="capSlot" aria-live="polite"></div>
       ${isWork&&c.it.secs?`<div class="rep side" id="side">${c.it.sides?(elapsed()/1000<Math.floor(c.it.secs/2)?'Side 1 of 2':'Side 2 of 2 · switch'):'Time left'}</div><div class="beat"><b id="beat"></b></div>`
-      :isWork?`<div class="rep">of ${c.it.reps} reps · <span id="elap">0:00</span><b id="repn" hidden></b></div>
+      :W.phase==='switch'?`<div class="rep side">Switch to your right side</div><div class="tip"><span class="lbl">How to do it</span><p>${esc(formFor(c.it))}</p></div>`
+      :isWork?`<div class="rep">of ${c.it.reps} reps${c.side?(c.side===1?' · left':' · right'):''} · <span id="elap">0:00</span><b id="repn" hidden></b></div>
         <div class="beat"><b id="beat"></b></div>
         <div class="dots" id="dots">${Array.from({length:c.it.reps},()=>'<i></i>').join('')}</div>`
-      :`${isRest&&W.fix?(W.fix.open?`<div class="fixbox"><p>Did more or fewer reps than the coach counted? Fix the number so your stats are right.</p><div class="fixrow"><div class="stepper"><button data-a="fixRep" data-v="-1" aria-label="One rep fewer">−</button><output>${W.fix.n}</output><button data-a="fixRep" data-v="1" aria-label="One rep more">+</button></div><button class="chip solid" data-a="fixOpen">Done</button></div></div>`:`<button class="fixlink" data-a="fixOpen">Logged ${W.fix.n} reps · <u>Fix count</u></button>`):''}
+      :`${isRest&&W.fix?(W.fix.open?`<div class="fixbox"><p>Did more or fewer reps${W.fix.both?', left and right together,':''} than the coach counted? Fix the number so your stats are right.</p><div class="fixrow"><div class="stepper"><button data-a="fixRep" data-v="-1" aria-label="One rep fewer">−</button><output>${W.fix.n}</output><button data-a="fixRep" data-v="1" aria-label="One rep more">+</button></div><button class="chip solid" data-a="fixOpen">Done</button></div></div>`:`<button class="fixlink" data-a="fixOpen">Logged ${W.fix.n} reps${W.fix.both?' (both sides)':''} · <u>Fix count</u></button>`):''}
         ${isRest?nextPicker(c):''}
         <div class="tip"><span class="lbl">${isRest?`Up next: set ${c.set} of ${c.it.sets} · `:''}How to do it</span><p>${esc(formFor(c.it))}</p></div>`}
     </main>
@@ -598,7 +614,7 @@ function renderWorkout(){
 function nextLeft(){ const seen=new Set(), out=[]; for(let i=W.qi;i<W.queue.length;i++){const it=W.queue[i].it; if(!seen.has(it)){seen.add(it); out.push(it);}} return out; }
 function nextPicker(c){ const left=nextLeft(); if(left.length<2)return '';
   if(!W.pick)return `<button class="fixlink" data-a="pickOpen">Up next: ${esc(c.it.name)} · <u>Change</u></button>`;
-  return `<div class="fixbox"><p>Pick what's next</p><div class="chips">${left.map(it=>{const i=S.plan.items.indexOf(it), n=W.queue.slice(W.qi).filter(q=>q.it===it).length;
+  return `<div class="fixbox"><p>Pick what's next</p><div class="chips">${left.map(it=>{const i=S.plan.items.indexOf(it), n=W.queue.slice(W.qi).filter(q=>q.it===it&&q.side!==2).length;
     return `<button class="chip ${it===c.it?'solid':''}" data-a="pickNext" data-i="${i}" aria-pressed="${it===c.it}">${esc(it.name)}${n>1?` · ${n} sets`:''}</button>`}).join('')}</div></div>`; }
 function pickNext(it){ const rest=W.queue.slice(W.qi); W.queue=W.queue.slice(0,W.qi).concat(rest.filter(q=>q.it===it),rest.filter(q=>q.it!==it)); W.pick=false;
   renderWorkout(); const nx=cur(); readForm(nx.it,'Up next, '); }
@@ -619,7 +635,7 @@ function paint(){
     const dots=document.getElementById('dots').children;
     for(let i=0;i<dots.length;i++)dots[i].classList.toggle('on',i<done);
   } else {
-    clock.textContent=W.phase==='brief'?'':W.phase==='ready'?String(Math.max(1,Math.ceil(W.dur-t))):fmt(Math.ceil(W.dur-t));
+    clock.textContent=W.phase==='brief'?'':(W.phase==='ready'||W.phase==='switch')?String(Math.max(1,Math.ceil(W.dur-t))):fmt(Math.ceil(W.dur-t));
   }
 }
 
@@ -713,7 +729,7 @@ function saveWorkout(name){
 }
 function logWorkout(){
   const p=S.plan; if(!W||!W.setsDone)return;
-  const items=p.items.map((it,i)=>({name:it.name,equip:it.equip,sets:W.log[i].sets,reps:W.log[i].reps,secs:W.log[i].secs||0,
+  const items=p.items.map((it,i)=>({name:it.name,equip:it.equip,sets:W.log[i].sets,reps:W.log[i].reps,secs:W.log[i].secs||0,sides:!!it.sides,
     wkg:!it.secs&&WEIGHTED(it.equip)&&it.weight>0?Math.round(toKg(it.weight,p.unit)*100)/100:0})).filter(x=>x.sets>0);
   const x={kind:'log',id:'l_'+uid(),at:Date.now(),ms:Math.round(W.total),cat:p.category,savedId:p.savedId||null,name:p.savedName||null,unit:p.unit,items};
   ST.logs.push(x); putRow(x);
@@ -1125,6 +1141,7 @@ $app.addEventListener('click',e=>{
     case 'inc': case 'dec': { const it=p.items[+b.dataset.i], k=b.dataset.k, up=a==='inc';
       if(k==='secs'){ const v=it.secs, st=up?(v<120?15:v<600?60:300):(v<=120?15:v<=600?60:300); it.secs=Math.min(3600,Math.max(15,v+(up?st:-st))); }
       else { const max=k==='sets'?10:50; it[k]=Math.min(max,Math.max(1,it[k]+(up?1:-1))); } render(); break; }
+    case 'sides': { const it=p.items[+b.dataset.i]; it.sides=!it.sides; if(it.secs)it.secs=it.sides?Math.min(3600,it.secs*2):Math.max(15,Math.round(it.secs/2)); render(); break; }
     case 'pace': p.pace=+b.dataset.v; render(); break;
     case 'rest': p.rest=+b.dataset.v; render(); break;
     case 'voice': profSet(x=>{x.voice=!x.voice}); render(); break;
